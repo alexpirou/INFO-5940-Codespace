@@ -58,13 +58,13 @@ Make sure you're in the Codespace environment, then:
 ## Technical Details
 
 ### Chunking Strategy
-Using `RecursiveCharacterTextSplitter` with 1000-character chunks and 100-character overlap. This size seemed like a good balance - enough context for the model without hitting token limits. The overlap helps prevent losing information at chunk boundaries. RecursiveCharacterTextSplitter tries to split on natural boundaries like paragraphs instead of cutting sentences in half.
+Using `RecursiveCharacterTextSplitter` with 1000-character chunks and 100-character overlap. This size seemed like a good balance where it includes enough context for the model without hitting token limits. The overlap helps prevent losing information at chunk boundaries.
 
 ### Models Used
 - **Embeddings**: `openai.text-embedding-3-small` - cheaper and works fine for this
-- **LLM**: `openai.gpt-4o-mini` - way cheaper than gpt-4o and handles RAG well
+- **LLM**: `openai.gpt-4o-mini` - cheaper than gpt-4o and handles RAG for this use case well
 - **Vector DB**: ChromaDB (ephemeral, in-memory)
-- **Retrieval**: k=3 chunks - gives enough context without overwhelming the prompt. Tried k=5 but k=3 was better.
+- **Retrieval**: k=3 chunks which gives enough context without overwhelming the prompt. Tried k=5 but k=3 was better.
 
 
 ## Configuration Changes from Template
@@ -79,7 +79,7 @@ Using `RecursiveCharacterTextSplitter` with 1000-character chunks and 100-charac
 
 ### Version Tweaks
 
-Had to pin some LangChain versions to avoid compatibility issues:
+Pinned a few LangChain versions to avoid compatibility issues:
 - `langchain-core~=0.2.15`
 - `langchain-openai~=0.1.23`
 - `langchain-community~=0.2.15`
@@ -88,13 +88,11 @@ Had to pin some LangChain versions to avoid compatibility issues:
 
 - Uses `OPENAI_API_KEY` environment variable
 - Points to Cornell's API: `https://api.ai.it.cornell.edu`
-- Model names need the provider prefix (like `openai.gpt-4o-mini` not just `gpt-4o-mini`)
-
-Didn't change anything in `.devcontainer`.
+- Model names need the provider prefix such as `openai.gpt-4o-mini`
 
 ## Design Choices
 
-**Chunking:** 1000 characters seemed like a good balance - enough context for the model without hitting token limits. The 100-character overlap helps prevent losing information at chunk boundaries. Used RecursiveCharacterTextSplitter because it tries to split on natural boundaries like paragraphs instead of cutting sentences in half.
+**Chunking:** 1000 characters seemed like a good balance which includes enough context for the model without hitting token limits. The 100-character overlap helps prevent losing information at chunk boundaries. Used RecursiveCharacterTextSplitter because it tries to split on natural boundaries like paragraphs instead of cutting sentences in half.
 
 **Models:** Went with the cheaper options since they work fine for this:
 - `text-embedding-3-small` for embeddings
@@ -122,16 +120,6 @@ Didn't change anything in `.devcontainer`.
 - Check that `OPENAI_API_KEY` is set in your environment
 - Make sure you're using Cornell's endpoint
 - Model names need the provider prefix: `openai.gpt-4o-mini` not just `gpt-4o-mini`
-
-**App is slow:**
-- Big PDFs take a while to process (embedding generation)
-- But it only processes once - after that, questions should be fast
-- The embeddings get cached in session state
-
-**Chat history won't clear:**
-- Hit the "Clear Chat History" button
-- That resets the conversation but keeps your documents loaded
-- To completely start over, refresh the page
 
 ## Known Issues
 

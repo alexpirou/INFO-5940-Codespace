@@ -1,87 +1,139 @@
-# INFO 5940 
-Welcome to the INFO 5940 repository. You will complete your work using [**GitHub Codespaces**](#about-github-codespaces) and save your progress in your own GitHub repository. This guide will walk you through setting up the development environment and running the test notebook.  
 
-## Getting Started 
+# Document Q&A Chat App
 
-### Step 1: Fork this repository 
-1. Click the **Fork** button (top right of this page).
-2. This will create a copy of the repo under **your own GitHub account**.
+Upload PDFs or text files and ask questions about them. The app uses RAG (Retrieval-Augmented Generation) to find relevant parts of your documents and generate accurate answers. Built with Streamlit, LangChain, ChromaDB, and OpenAI's API.
 
-Forking creates a personal copy of the repo under **your** GitHub account.  
-- You can commit, push, and experiment freely.  
-- Your work stays separate from the official class materials.
+## What It Does
 
-### Step 2: Open your forked repo Codespace
-1. Go to **your forked repo**.
-2. Click the green **Code** button and switch to the **Codespaces** tab.  
-3. Select **Create Codespace**.
-4. Wait a few minutes for the environment to finish setting up.
+- Upload multiple files at once (PDFs, .txt, .md)
+- Ask questions about your documents in a chat interface
+- Get answers based on actual content from your files
+- See exactly which chunks from your documents were used for each answer
+- Keep a conversation going with full chat history
+- Browse through all the document chunks in the sidebar
+- Track token usage so you know what you're spending
 
-### Step 3: Verify your environment 
-Once the Codespace is ready: 
-1. Open `test.ipynb` in your codespace.
-2. Install the Python 3.11.13 Kernel.  In the top-right corner, click **Select Kernel**.
-    1. If **Install/Enable suggested extensions Python + Jupyter** appears, select it, and wait for the install to finish before moving on to the next step.
-    2. Select **Python Environments** choose **Python 3.11.13 (first option)**.
-3. Run the first code block to check your setup. You should see `openai` import successfully.
+## How to Run
 
-## About GitHub Codespaces
+Make sure you're in the Codespace environment, then:
 
-[Codespaces](https://docs.github.com/en/codespaces) is a complete software development and execution environment, running in the cloud, with its primary interface being a VSCode instance running in your browser.
-
-Codespaces is not free, but their per-month [free quota](https://docs.github.com/en/billing/concepts/product-billing/github-codespaces#free-quota) is generous.  Codespaces is free under the [GitHub Student Developer Pack](https://education.github.com/pack#github-codespaces).
-
-### Codespaces Tips
-
-* Codespaces keep running even when you close your browser (but will time out and stop after a while)
-* Unless you're on a free plan, or within your free quota, costs acrue while the codespace is running, whether or not you have it open in your browser or are working on it
-* You can control when it's running, and the space it takes up.  Check out [GitHub's codespaces lifecycle documentation](https://docs.github.com/en/codespaces/about-codespaces/understanding-the-codespace-lifecycle)
-
-## Sync Updates 
-To make sure your personal forked repository stays up to date with the original class repository, please follow these steps:
-1. Open your forked repo.
-2. At the top of the page, you should see a banner or menu option that shows whether your fork is behind the original repo.
-3. Click the **Sync fork** button.
-4. In the dropdown, choose **Update branch** to pull the latest changes from the original repo into your fork.
-
-Optionally, you can also follow these steps to create a new branch on your fork:
-1. Open your **forked repository** on GitHub.  
-2. At the top of the page, next to the branch dropdown, click the **Branches** button.  
-3. In the **Branches** view, click the green **New Branch** button.  
-4. In the popup window, enter a branch name.  
-   - You can use any name you like, but it’s recommended to match the branch name used in class for better organization.  
-5. Under **Branch source**, select:  
-   - **Repository:** `AyhamB/INFO-5940-Codespace`  
-   - **Branch:** choose the branch you want to sync from (e.g., `streamlit`).  
-6. Click the green **Create New Branch** button.  
-7. Verify that you’re now back in **your fork**, on the new branch you just created.  
-8. Click the **Code** button and create a new Codespace (if you don’t already have one).  
-   - Make sure the Codespace is created from the **current branch**.
-  
-## Running a Streamlit App on Codespaces  
-
-Follow these steps to launch and view your Streamlit app in GitHub Codespaces:
-
-1. **Open the terminal** inside your Codespace.  
-
-2. Run the command:  
+1. **Set your API key** (if not already done):
    ```bash
-   streamlit run your-file-name.py
-   ```  
-   *(Replace `your-file-name.py` with the actual name of your Streamlit app file, e.g., `hello_app.py`.)*  
+   export OPENAI_API_KEY="your-api-key-here"
+   ```
 
-3. After pressing **Enter**, a popup should appear in the bottom-right corner of Codespace editor.  
-   - Click **“Open in Browser”** to view your app.  
+2. **Install everything**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-   ⚠️ *If you miss the popup:*  
-   - Press **Ctrl + C** in the terminal to stop the app.  
-   - Rerun the command from step 2 — the popup should appear again.  
+3. **Start the app**:
+   ```bash
+   streamlit run chat_with_pdf.py
+   ```
 
-4. A new browser tab will open, showing the interface of your Streamlit app.  
+4. A popup should appear in the bottom-right - click "Open in Browser". If you miss it, just stop the app (Ctrl+C) and run it again.
 
-5. **Make changes to your code** in the Codespace editor.  
-   - Refresh the browser tab to see the updated version of your app.  
+### Using the App
 
+1. Click "Browse files" and upload some documents
+2. Wait for it to process (you'll see a status indicator)
+3. Type your question in the chat box at the bottom
+4. The AI answers based on your documents - expand "Source Chunks Used" to see what it referenced
+
+## How It Works
+
+**Processing your documents:**
+1. Extracts text (PyPDFLoader for PDFs, direct read for .txt/.md files)
+2. Splits into 1000-character chunks with 100-character overlap
+3. Converts chunks to embeddings using OpenAI's text-embedding-3-small
+4. Stores in ChromaDB (in-memory vector database)
+
+**Answering questions:**
+1. Takes your question and converts it to an embedding
+2. Finds the 3 most similar chunks from your documents
+3. Sends those chunks + your question to GPT-4o-mini
+4. Returns the answer (you can see which chunks it used)
+
+## Technical Details
+
+### Chunking Strategy
+Using `RecursiveCharacterTextSplitter` with 1000-character chunks and 100-character overlap. This size seemed like a good balance - enough context for the model without hitting token limits. The overlap helps prevent losing information at chunk boundaries. RecursiveCharacterTextSplitter tries to split on natural boundaries like paragraphs instead of cutting sentences in half.
+
+### Models Used
+- **Embeddings**: `openai.text-embedding-3-small` - cheaper and works fine for this
+- **LLM**: `openai.gpt-4o-mini` - way cheaper than gpt-4o and handles RAG well
+- **Vector DB**: ChromaDB (ephemeral, in-memory)
+- **Retrieval**: k=3 chunks - gives enough context without overwhelming the prompt. Tried k=5 but k=3 was better.
+
+
+## Configuration Changes from Template
+
+### What I Added to requirements.txt
+
+- `langchain-chroma` - for the vector database
+- `pypdf` - for reading PDFs (fixed typo from template that had "litellmpypdf")
+- `langchain-community` - includes PyPDFLoader
+- `langchain-openai` - OpenAI embeddings and LLM integration
+- `tiktoken` - for counting tokens
+
+### Version Tweaks
+
+Had to pin some LangChain versions to avoid compatibility issues:
+- `langchain-core~=0.2.15`
+- `langchain-openai~=0.1.23`
+- `langchain-community~=0.2.15`
+
+### API Setup
+
+- Uses `OPENAI_API_KEY` environment variable
+- Points to Cornell's API: `https://api.ai.it.cornell.edu`
+- Model names need the provider prefix (like `openai.gpt-4o-mini` not just `gpt-4o-mini`)
+
+Didn't change anything in `.devcontainer`.
+
+## Design Choices
+
+**Chunking:** 1000 characters seemed like a good balance - enough context for the model without hitting token limits. The 100-character overlap helps prevent losing information at chunk boundaries. Used RecursiveCharacterTextSplitter because it tries to split on natural boundaries like paragraphs instead of cutting sentences in half.
+
+**Models:** Went with the cheaper options since they work fine for this:
+- `text-embedding-3-small` for embeddings
+- `gpt-4o-mini` for chat (way cheaper than gpt-4o)
+
+**Retrieval:** k=3 chunks gives enough context without sending too much. Tried k=5 but it didn't really help.
+
+**Storage:** Using ChromaDB in ephemeral mode (in-memory). It's fast and simple for a prototype. Downside is you lose everything when you restart the app, but that's fine for this use case.
+
+**Session State:** Streamlit reruns the whole script on every interaction, so I use session_state to keep the vector database, chunks, and chat history around.
 
 ## Troubleshooting
-- The Jupyter extension should install automatically. If you still cannot select a Python kernel on Jupyter Notebook: Go to the left sidebar >> **Extensions** >> search for **Jupyter** >> reload window (or reinstall it).   
+
+**"No documents processed" error:**
+- Make sure you actually uploaded a file
+- Check it's a supported format (.txt, .md, or .pdf)
+- Try re-uploading
+
+**PDF not working:**
+- PDFs need to have actual text, not just scanned images (no OCR)
+- Some PDFs with weird formatting might not extract properly
+- If it's giving you trouble, try converting to .txt
+
+**Getting API errors (400/401):**
+- Check that `OPENAI_API_KEY` is set in your environment
+- Make sure you're using Cornell's endpoint
+- Model names need the provider prefix: `openai.gpt-4o-mini` not just `gpt-4o-mini`
+
+**App is slow:**
+- Big PDFs take a while to process (embedding generation)
+- But it only processes once - after that, questions should be fast
+- The embeddings get cached in session state
+
+**Chat history won't clear:**
+- Hit the "Clear Chat History" button
+- That resets the conversation but keeps your documents loaded
+- To completely start over, refresh the page
+
+## Known Issues
+
+- Vector database clears when you restart the app
+- Each browser tab has its own separate document collection

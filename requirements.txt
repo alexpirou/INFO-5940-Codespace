@@ -10,6 +10,7 @@ langchain-community~=0.2.15
 langchain~=0.2.15
 langchain_core~=0.2.15
 langchain-openai~=0.1.23
+langchain-chroma
 cfn_flip
 cfn-lint
 ipykernel
@@ -17,4 +18,5 @@ notebook
 openpyxl
 beautifulsoup4
 pyarrow
-litellm
+pypdf
+tiktoken

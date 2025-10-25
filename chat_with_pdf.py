@@ -191,8 +191,8 @@ if question:  # If user has asked a question
         st.session_state.messages.append({"role": "assistant", "content": response})
     
     except Exception as e:
-        st.error(f"⚠️ Error processing question: {str(e)}")
-        st.info("💡 Please try re-uploading your documents.")
+        st.error(f"Error processing question: {str(e)}")
+        st.info("Please try re-uploading your documents.")
         # Reset vectorstore to force re-processing
         st.session_state["vectorstore"] = None
 
